@@ -1,0 +1,19 @@
+# Ignore Git history
+.git
+.github
+
+# Ignore Python virtual environment
+venv/
+.venv/
+
+# Ignore Python bytecode and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Ignore local environment files and user-specific files
+.env
+.DS_Store
