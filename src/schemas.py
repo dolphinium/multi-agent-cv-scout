@@ -26,3 +26,14 @@ class Resume(BaseModel):
     experience: List[Experience] = Field(..., description="List of professional experiences")
     technical_skills: List[str] = Field(..., description="List of technical skills")
     languages: List[str] = Field(..., description="List of languages spoken by the candidate")
+
+class RelevancyAnalysis(BaseModel):
+    """Schema for the relevancy analysis of a resume against a job description."""
+    score: int = Field(
+        ..., 
+        description="The compatibility score from 0 to 100, representing how well the resume matches the job description."
+    )
+    summary: str = Field(
+        ...,
+        description="A concise, 3-4 sentence summary explaining the score, highlighting key strengths and potential gaps in the candidate's profile."
+    )

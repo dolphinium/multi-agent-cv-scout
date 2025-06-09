@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 
 from src.schemas import Resume
 from src.utils import parse_pdf_to_text
+from src.schemas import Resume, RelevancyAnalysis
+
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -64,3 +66,51 @@ def standardization_agent(state):
     final_report = extracted_json.dict()
     print("---AGENT: DATA STANDARDIZED---")
     return {"final_report": final_report}
+
+# 4. Job Match & Relevancy Agent
+def relevancy_analysis_agent(state):
+    """
+    Analyzes the resume against the job description to provide a match score and summary.
+    """
+    print("---AGENT: ANALYZING RELEVANCY---")
+    job_description = state.get("job_description")
+    final_report = state.get("final_report")
+
+    if not job_description or not final_report:
+        print("---AGENT: SKIPPING RELEVANCY ANALYSIS (missing job description or report)---")
+        return {"match_score": 0, "match_summary": "Not applicable (no job description provided)."}
+
+    # We need a new structured LLM call specifically for this agent's output schema
+    relevancy_llm = llm.with_structured_output(RelevancyAnalysis)
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", 
+             "You are an expert tech recruiter and hiring manager. Your task is to analyze the candidate's resume, provided as a JSON object, and compare it against the job description. "
+             "Evaluate the experience, skills, and education to determine the candidate's suitability for the role. "
+             "Provide a compatibility score from 0 to 100 and a concise summary justifying your score."),
+            ("human", 
+             "Please analyze the following resume and job description.\n"
+             "---CANDIDATE RESUME---\n"
+             "{resume_json}\n\n"
+             "---JOB DESCRIPTION---\n"
+             "{job_description}"
+            ),
+        ]
+    )
+
+    chain = prompt | relevancy_llm
+    
+    try:
+        analysis_result = chain.invoke({
+            "resume_json": final_report,
+            "job_description": job_description
+        })
+        print("---AGENT: RELEVANCY ANALYSIS COMPLETE---")
+        return {
+            "match_score": analysis_result.score,
+            "match_summary": analysis_result.summary
+        }
+    except Exception as e:
+        print(f"---AGENT: ERROR during relevancy analysis: {e}---")
+        return {"match_score": 0, "match_summary": "An error occurred during analysis."}
