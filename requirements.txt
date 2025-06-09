@@ -2,3 +2,8 @@ langchain-community
 pymupdf
 langchain_google_genai
 python-dotenv
+langchain
+langgraph
+langchain_core
+gradio
+pydantic
