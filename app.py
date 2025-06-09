@@ -1,6 +1,13 @@
 import gradio as gr
 from src.graph import create_workflow
 import json
+import logging
+
+# Import custom exceptions
+from src.schemas import PDFParsingError, ExtractionError, StandardizationError, RelevancyAnalysisError, CVScoutError
+
+# Configure basic logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # Create the compiled workflow app
 graph_app = create_workflow()
@@ -37,8 +44,29 @@ def process_resume(file, job_description):
 
         return report_json, analysis_report
 
+    except PDFParsingError as e:
+        error_message = f"Error during PDF parsing: {e}"
+        logging.error(error_message)
+        return error_message, error_message
+    except ExtractionError as e:
+        error_message = f"Error during information extraction: {e}"
+        logging.error(error_message)
+        return error_message, error_message
+    except StandardizationError as e:
+        error_message = f"Error during data standardization: {e}"
+        logging.error(error_message)
+        return error_message, error_message
+    except RelevancyAnalysisError as e:
+        error_message = f"Error during relevancy analysis: {e}"
+        logging.error(error_message)
+        return error_message, error_message
+    except CVScoutError as e:
+        error_message = f"An agent workflow error occurred: {e}"
+        logging.error(error_message)
+        return error_message, error_message
     except Exception as e:
-        error_message = f"An error occurred: {str(e)}"
+        error_message = f"An unexpected error occurred: {str(e)}"
+        logging.error(error_message)
         return error_message, error_message
 
 # Define the Gradio interface
