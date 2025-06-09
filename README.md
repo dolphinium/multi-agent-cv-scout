@@ -74,7 +74,12 @@ graph TD
 
 The development of CV-Scout followed a structured, iterative process.
 
-### Stage 1: Core Functionality & MVP
+Stage 1: Core Functionality & MVP [✅]      
+Stage 2: Implementing the Multi-Agent Architecture [ ]      
+Stage 3: Advanced Feature Integration & Analysis [ ]    
+
+
+### Stage 1: Core Functionality & MVP 
 
 The initial goal was to validate the core concept: extracting structured data from a PDF. This stage focused on creating a Minimum Viable Product (MVP) with a single, monolithic Langchain chain.
 *   **Objective:** Successfully parse a PDF and extract the candidate's name and email.

@@ -1,0 +1,4 @@
+langchain-community
+pymupdf
+langchain_google_genai
+python-dotenv
