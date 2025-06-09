@@ -2,8 +2,8 @@
 
 An AI-powered system designed to transform unstructured resume PDFs into actionable, structured data and perform intelligent job-to-candidate matching. This project demonstrates an end-to-end multi-agent workflow using Langchain(LangGraph) and the Google Gemini API.
 
- 
-*(This is a placeholder image. You should replace this with a screenshot of your actual Gradio application.)*
+
+![alt text](./docs/front-page.png " CV-Scout Front Page")
 
 ## 🚀 Project Vision
 
@@ -18,6 +18,7 @@ The system ingests a candidate's PDF resume, converts the unstructured data into
 *   **Job-to-Candidate Matching:** Scores the resume against a job description to quantify candidate-role fit.
 *   **AI-Powered Analysis:** Provides a brief, human-readable summary explaining the compatibility score, highlighting strengths and potential gaps.
 *   **Interactive UI:** A simple and intuitive user interface built with Gradio for easy demonstration and use.
+*   **Dockerized Deployment:** The entire application is containerized with Docker for easy, reliable, and portable deployment.
 
 ## 🛠️ Technical Architecture
 
@@ -66,6 +67,7 @@ graph TD
 
 *   **Programming Language:** Python
 *   **Core AI Framework:** Langchain (utilizing LangGraph for agent orchestration)
+*   **Deployment:** Docker
 *   **LLM:** Google Gemini API
 *   **PDF Parsing:** PyMuPDF (`fitz`)
 *   **UI Framework:** Gradio
@@ -75,40 +77,104 @@ graph TD
 The development of CV-Scout followed a structured, iterative process.
 
 Stage 1: Core Functionality & MVP [✅]      
-Stage 2: Implementing the Multi-Agent Architecture [✅]      
-Stage 3: Advanced Feature Integration & Analysis [✅]      
+Stage 2: Implementing the Multi-Agent Architecture [✅]     
+Stage 3: Advanced Feature Integration & Analysis [✅]       
+Stage 4: Dockerization [✅]     
 
-
-### Stage 1: Core Functionality & MVP 
+### Stage 1: Core Functionality & MVP
 
 The initial goal was to validate the core concept: extracting structured data from a PDF. This stage focused on creating a Minimum Viable Product (MVP) with a single, monolithic Langchain chain.
 *   **Objective:** Successfully parse a PDF and extract the candidate's name and email.
-*   **Implementation:** A simple Python script combining `PyMuPDF` and a Langchain chain calling the Gemini API.
 *   **Outcome:** Proved the viability of the core technology stack and established a baseline for more complex development.
 
 ### Stage 2: Implementing the Multi-Agent Architecture
 
 Moving from a single chain to a sophisticated multi-agent system was the key architectural evolution. This stage focused on building the robust, orchestrated workflow described in the architecture diagram.
-*   **Objective:** Decompose the single chain into specialized agents managed by an orchestrator.
-*   **Implementation:** Refactored the codebase to use **LangGraph**. Created individual agents for ingestion, extraction, and standardization, each with a clearly defined role and state.
+*   **Objective:** Decompose the single chain into specialized agents managed by an orchestrator using LangGraph.
 *   **Outcome:** A highly modular and scalable system that mirrors real-world team collaboration, improving robustness and maintainability.
 
 ### Stage 3: Advanced Feature Integration & Analysis
 
 With the agentic foundation in place, this final stage focused on adding high-value business intelligence, transforming the tool from a simple parser into a decision-support system.
 *   **Objective:** Add the ability to score a resume against a job description.
-*   **Implementation:** Developed the **Relevancy Agent** using a RAG approach to provide contextually-aware analysis. The Gradio UI was updated to accept the job description as a second input.
-*   **Outcome:** Significantly enhanced the project's utility by providing immediate, actionable insights for the user, demonstrating a clear understanding of building business-focused AI solutions.
+*   **Outcome:** Significantly enhanced the project's utility by providing immediate, actionable insights for the user.
+
+### Stage 4: Dockerization
+
+This stage focused on encapsulating the application into a portable and reproducible environment using Docker.
+*   **Objective:** Create a Docker image that contains the application, all its dependencies, and the necessary runtime configuration.
+*   **Implementation:** Wrote a multi-stage `Dockerfile` for efficient image building and a `.dockerignore` file to keep the image lean.
+*   **Outcome:** The application is now fully portable and can be run with two simple commands, eliminating "it works on my machine" issues and preparing it for cloud deployment.
 
 ## 🚀 Setup and Installation
-will be added later.
 
+You can run this project in two ways: with Docker (recommended for ease of use) or by setting up a local Python environment.
+
+### Method 1: Running with Docker (Recommended)
+
+**Prerequisites:** Docker must be installed and running on your system.
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/dolphinium/multi-agent-cv-scout.git
+    cd multi-agent-cv-scout
+    ```
+
+2.  **Set up your API Key:**
+    Create a file named `.env` in the root of the project and add your API key:
+    ```
+    GEMINI_API_KEY="your-google-api-key"
+    ```
+
+3.  **Build the Docker image:**
+    ```bash
+    docker build -t cv-scout .
+    ```
+
+4.  **Run the Docker container:**
+    ```bash
+    docker run -p 7860:7860 --env-file .env cv-scout
+    ```
+
+5.  Open your browser and navigate to `http://localhost:7860`.
+
+### Method 2: Running Locally
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/dolphinium/multi-agent-cv-scout.git
+    cd multi-agent-cv-scout
+    ```
+
+2.  **Create and activate a virtual environment:**
+    ```bash
+    python -m venv venv
+    # On Windows: venv\Scripts\activate
+    # On macOS/Linux: source venv/bin/activate
+    ```
+
+3.  **Install the required dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Set up your API Key:**
+    Create a file named `.env` in the root of the project and add your API key:
+    ```
+    GEMINI_API_KEY="your-google-api-key"
+    ```
+
+5.  **Run the Gradio application:**
+    ```bash
+    gradio app.py
+    ```
+
+6.  Open your browser and navigate to the local URL provided by Gradio (e.g., `http://127.0.0.1:7860`).
 
 ## 🔮 Future Improvements
 
 *   **Batch Processing:** Allow users to upload multiple resumes for simultaneous analysis.
 *   **Database Integration:** Store the structured outputs in a database (e.g., SQLite, PostgreSQL) for long-term storage and trend analysis.
-*   **Dockerization:** Containerize the application for easier deployment and scalability.
 *   **Enhanced UI Features:** Add features like resume comparison, skill gap analysis, and candidate ranking.
 *   **Fine-Tuning:** Fine-tune a smaller, open-source model on a curated dataset of resumes to improve accuracy and reduce API costs.
 *   **Expanded Skill Ontology:** Develop a more sophisticated system for classifying skills into predefined categories to enhance search and filtering capabilities.
