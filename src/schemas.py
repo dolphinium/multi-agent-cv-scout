@@ -6,7 +6,7 @@ from typing import List, Optional
 
 class Education(BaseModel):
     """Schema for educational qualifications."""
-    instution: str = Field(..., description="Name of the university or instution")
+    institution: str = Field(..., description="Name of the university or institution")
     degree: str = Field(..., description= "The degree obtained")
     gpa: Optional[str] = Field(None, description="Grade Point Average")
     years: str = Field(..., description="Start and end years of education")
