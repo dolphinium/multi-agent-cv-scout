@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
+# from datetime import datetime
 
+# current = "current year: "+ str(datetime.now().year)+ " current month: " +str(datetime.now().month)
 
 class Education(BaseModel):
     """Schema for educational qualifications."""
@@ -14,7 +16,9 @@ class Experience(BaseModel):
     """Schema for professional experience."""
     company: str = Field(..., description="Name of the company")
     title: str = Field(..., description="Job title or role")
-    years: str = Field(..., description="Start and end dates of employment")
+    start: str = Field(..., description="Start date of employment")
+    end: str = Field(..., description="End date of employment")
+    # duration: str= Field(..., description=f"Duration of experience in years and months: eg. 1 year and 2 months or 2 months, if end time is current, calculate the duration according to today's date: {current}")
     location: Optional[str] = Field(None, description="Location of the company")
     description: str = Field(..., description="Description of responsibilities and achievements")
  
