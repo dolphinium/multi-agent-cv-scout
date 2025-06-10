@@ -49,12 +49,6 @@ def should_run_analysis(state):
     else:
         # logger.info("---ROUTER: No job description. Skipping analysis.---")
         return "skip_analysis"
-    if state.get("job_description"):
-        print("---ROUTER: Job description found. Proceeding to analysis.---")
-        return "run_analysis"
-    else:
-        print("---ROUTER: No job description. Skipping analysis.---")
-        return "skip_analysis"
 
 def create_workflow():
     """
