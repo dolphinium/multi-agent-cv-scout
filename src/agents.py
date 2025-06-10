@@ -10,7 +10,7 @@ from src.utils import parse_pdf_to_text
 from src.schemas import Resume, RelevancyAnalysis, PDFParsingError, ExtractionError, StandardizationError, RelevancyAnalysisError
 
 
-load_dotenv()
+load_dotenv(override=True)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 logger = logging.getLogger(__name__)

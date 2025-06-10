@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from constants import SYSTEM_MESSAGE
 import os
 
-load_dotenv()
+load_dotenv(override=True)
 
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
