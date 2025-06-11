@@ -44,7 +44,12 @@ class RelevancyAnalysis(BaseModel):
         ...,
         description="A concise, 3-4 sentence summary explaining the score, highlighting key strengths and potential gaps in the candidate's profile."
     )
- 
+
+class GeneratedEmail(BaseModel):
+    """Schema for a generated email."""
+    subject: str = Field(..., description="The subject line of the email.")
+    body: str = Field(..., description="The full body content of the email.")
+
 # Custom Exception Types
 class CVScoutError(Exception):
     """Base exception for CV-Scout errors."""

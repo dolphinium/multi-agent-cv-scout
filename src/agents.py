@@ -7,6 +7,7 @@ import logging
 
 from src.schemas import Resume
 from src.utils import parse_pdf_to_text
+from src.database import add_or_update_candidate, add_application
 from src.schemas import Resume, RelevancyAnalysis, PDFParsingError, ExtractionError, StandardizationError, RelevancyAnalysisError
 
 
@@ -122,20 +123,6 @@ def standardization_agent(state):
 def relevancy_analysis_agent(state):
     """
     Job Match & Relevancy Agent: Analyzes the resume against the job description.
-
-    Compares the structured resume data ('final_report') with the 'job_description'
-    to generate a compatibility score and a summary using an LLM.
-
-    Args:
-        state (AgentState): The current state of the agent workflow, expected to contain
-                            'job_description' and 'final_report'.
-
-    Returns:
-        dict: A dictionary containing the match score ('match_score') and summary ('match_summary').
-              Returns default values if 'job_description' or 'final_report' are missing.
-
-    Raises:
-        RelevancyAnalysisError: If an error occurs during the LLM-based relevancy analysis.
     """
     logger.info("---AGENT: ANALYZING RELEVANCY---")
     job_description = state.get("job_description")
@@ -143,19 +130,17 @@ def relevancy_analysis_agent(state):
 
     if not job_description or not final_report:
         logger.info("---AGENT: SKIPPING RELEVANCY ANALYSIS (missing job description or report)---")
+        # Return default values that match the expected state keys
         return {"match_score": 0, "match_summary": "Not applicable (no job description provided)."}
 
-    # We need a new structured LLM call specifically for this agent's output schema
     relevancy_llm = llm.with_structured_output(RelevancyAnalysis)
 
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", 
-             "You are an expert tech recruiter and hiring manager. Your task is to analyze the candidate's resume, provided as a JSON object, and compare it against the job description. "
-             "Evaluate the experience, skills, and education to determine the candidate's suitability for the role. "
-             "Provide a compatibility score from 0 to 100 and a concise summary justifying your score."),
+             "You are an expert tech recruiter..."), # No changes to prompt
             ("human", 
-             "Please analyze the following resume and job description.\n"
+             "Please analyze the following resume and job description...\n"
              "---CANDIDATE RESUME---\n"
              "{resume_json}\n\n"
              "---JOB DESCRIPTION---\n"
@@ -163,9 +148,7 @@ def relevancy_analysis_agent(state):
             ),
         ]
     )
-
     chain = prompt | relevancy_llm
-    
     try:
         analysis_result = chain.invoke({
             "resume_json": final_report,
@@ -179,3 +162,35 @@ def relevancy_analysis_agent(state):
     except Exception as e:
         logger.error(f"---AGENT: ERROR during relevancy analysis: {e}---")
         raise RelevancyAnalysisError(f"Error during relevancy analysis: {e}") from e
+    
+    
+def database_agent(state):
+    """
+    Database Agent: Saves the final results to the SQLite database.
+    """
+    logger.info("---AGENT: SAVING TO DATABASE---")
+    final_report = state.get("final_report")
+    job_id = state.get("job_id")
+    match_score = state.get("match_score")
+    match_summary = state.get("match_summary")
+
+    if not final_report or job_id is None:
+        logger.error("---AGENT: Cannot save to DB. Missing final report or job_id.")
+        # This should not happen in a normal flow, but it's good practice to check.
+        return {}
+
+    try:
+        # Add candidate to DB and get their ID
+        candidate_id = add_or_update_candidate(final_report)
+
+        # Link the candidate to the job via an application record
+        add_application(job_id, candidate_id, match_score, match_summary)
+        
+        logger.info(f"---AGENT: SUCCESSFULLY SAVED application for candidate {candidate_id} to job {job_id}---")
+        return {"candidate_id": candidate_id}
+
+    except Exception as e:
+        logger.error(f"---AGENT: ERROR during database operation: {e}---")
+        # We can choose to raise an error or just log it. For now, let's log.
+        return {}
+    

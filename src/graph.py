@@ -1,7 +1,10 @@
 from typing import TypedDict, Dict, Any, Optional
 from langgraph.graph import StateGraph, END
+import logging
 
-from src.agents import ingestion_agent, extraction_agent, standardization_agent, relevancy_analysis_agent
+from src.agents import ingestion_agent, extraction_agent, standardization_agent, relevancy_analysis_agent, database_agent
+
+logger = logging.getLogger(__name__)
 
 class AgentState(TypedDict):
     """
@@ -21,6 +24,8 @@ class AgentState(TypedDict):
     """
     file_path: str
     job_description: Optional[str]
+    job_id: Optional[int] 
+    candidate_id: Optional[int] 
     raw_text: str
     extracted_json: Dict[str, Any]
     final_report: Dict[str, Any]
@@ -42,12 +47,12 @@ def should_run_analysis(state):
         str: "run_analysis" if a job description is present, "skip_analysis" otherwise.
     """
     # Using logging instead of print for better practice
-    # logger.info("---ROUTER: DECIDING NEXT STEP---") # Need to add logger to graph.py
-    if state.get("job_description"):
-        # logger.info("---ROUTER: Job description found. Proceeding to analysis.---")
+    logger.info("---ROUTER: DECIDING NEXT STEP---")
+    if state.get("job_description") and state.get("job_description").strip():
+        logger.info("---ROUTER: Job description found. Proceeding to analysis.---")
         return "run_analysis"
     else:
-        # logger.info("---ROUTER: No job description. Skipping analysis.---")
+        logger.info("---ROUTER: No job description. Skipping analysis.---")
         return "skip_analysis"
 
 def create_workflow():
@@ -66,25 +71,29 @@ def create_workflow():
     workflow.add_node("ingestion_agent", ingestion_agent)
     workflow.add_node("extraction_agent", extraction_agent)
     workflow.add_node("standardization_agent", standardization_agent)
-    workflow.add_node("relevancy_analysis_agent", relevancy_analysis_agent) # Add the new agent node
+    workflow.add_node("relevancy_analysis_agent", relevancy_analysis_agent)
+    workflow.add_node("database_agent", database_agent) # <-- ADD THE NEW NODE
 
-    # 3. Redefine the edges with the new conditional logic
+    # Define the edges
     workflow.set_entry_point("ingestion_agent")
     workflow.add_edge("ingestion_agent", "extraction_agent")
     workflow.add_edge("extraction_agent", "standardization_agent")
 
-    # Add the conditional branching
+    # Conditional branch for relevancy analysis
     workflow.add_conditional_edges(
         "standardization_agent",
         should_run_analysis,
         {
             "run_analysis": "relevancy_analysis_agent",
-            "skip_analysis": END
+            "skip_analysis": "database_agent"  # <-- Skip directly to saving
         }
     )
     
-    # The analysis agent now leads to the end
-    workflow.add_edge("relevancy_analysis_agent", END)
+    # Both paths now lead to the database agent
+    workflow.add_edge("relevancy_analysis_agent", "database_agent")
+    
+    # The final step is saving to the database
+    workflow.add_edge("database_agent", END)
 
     # Compile the graph
     app = workflow.compile()
